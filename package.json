@@ -1,0 +1,23 @@
+{
+  "name": "bamazon",
+  "version": "1.0.0",
+  "description": "A command line app to implement a storefront functionality. ",
+  "main": "bamazonCustomer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bradotron/bamazon.git"
+  },
+  "author": "Bradley Jensen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bradotron/bamazon/issues"
+  },
+  "homepage": "https://github.com/bradotron/bamazon#readme",
+  "dependencies": {
+    "inquirer": "^6.2.2",
+    "mysql": "^2.16.0"
+  }
+}
