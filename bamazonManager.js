@@ -134,16 +134,19 @@ let logProductTable = function(products) {
   console.log(
     `|-----------------------------------------------------------------------|\n`
   );
-}
+};
 
 let viewLowInventory = function() {
   // this function will display any products that have a stock quantity less than 5
-  connection.query(`SELECT * FROM products WHERE stock_quantity<5`, function(err, res) {
+  connection.query(`SELECT * FROM products WHERE stock_quantity<5`, function(
+    err,
+    res
+  ) {
     if (err) throw err;
-    if(res.length > 0) {
+    if (res.length > 0) {
       logProductTable(res);
     } else {
-      console.log(`No items with low inventory found.`);
+      console.log(`No items with low inventory found.\n`);
     }
     userOptions();
   });
@@ -151,8 +154,62 @@ let viewLowInventory = function() {
 
 let addInventory = function() {
   // this function will ask the user for a product id and a quantity - it will add the quantity to the stock_quantity for the given productId
-  console.log(`addInventory()`);
-  userOptions();
+  connection.query(`SELECT * FROM products`, function(err, res) {
+    if (err) throw err;
+    // create an array of id's and a second array of quantities
+    let productIds = [];
+    let quantities = [];
+    for (let i = 0; i < res.length; i++) {
+      productIds.push(res[i].item_id);
+      quantities.push(res[i].stock_quantity);
+    }
+
+    inquirer
+      .prompt([
+        {
+          name: "id",
+          type: "input",
+          message: "Enter a Product ID",
+          validate: function(value) {
+            if (productIds.indexOf(parseInt(value)) >= 0) {
+              return true;
+            } else {
+              return "Please enter a valid Product ID";
+            }
+          }
+        },
+        {
+          name: "quantity",
+          type: "input",
+          message: "Enter the quantity of inventory to add",
+          validate: function(value) {
+            if (parseInt(value) > 0) {
+              return true;
+            } else {
+              return "Enter a value that is greater than 0";
+            }
+          }
+        }
+      ])
+      .then(function(answer) {
+        let productIndex = productIds.indexOf(parseInt(answer.id));
+        let currentStock = res[productIndex].stock_quantity;
+
+        connection.query(
+          `UPDATE products SET stock_quantity = ${currentStock +
+            parseInt(answer.quantity)} WHERE item_id = ${answer.id}`,
+          function(err, res) {
+            if (err) throw err;
+            console.log(
+              `Inventory of ${answer.id} has been increased by ${
+                answer.quantity
+              }`
+            );
+            userOptions();
+          }
+        );
+      });
+  });
 };
 
 let addProduct = function() {
