@@ -148,7 +148,7 @@ let purchaseProduct = function() {
               message: "Enter the quantity to purchase",
               validate: function(value) {
                 if (
-                  quantities[productIds.indexOf(productId)] > parseInt(value)
+                  quantities[productIds.indexOf(productId)] >= parseInt(value) && parseInt(value) >= 0
                 ) {
                   return true;
                 } else {
