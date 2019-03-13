@@ -112,33 +112,81 @@ let displayProducts = function() {
 
 // function to purchase a product
 let purchaseProduct = function() {
-  // ask the user for the product id and quantity to purchase
+  // execute a query to create the values for input validation
+  connection.query(`SELECT * FROM products`, function(err, res) {
+    if (err) throw err;
+    // create an array of id's and a second array of quantities
+    let productIds = [];
+    let quantities = [];
+    for (let i = 0; i < res.length; i++) {
+      productIds.push(res[i].item_id);
+      quantities.push(res[i].stock_quantity);
+    }
+    // now ask the user for the product id and quantity to purchase
+    inquirer
+      .prompt([
+        {
+          name: "id",
+          type: "input",
+          message: "Enter the Product ID you would like to purchase.",
+          validate: function(value) {
+            if (productIds.indexOf(parseInt(value)) >= 0) {
+              return true;
+            } else {
+              return "Please enter a number greater than 0.";
+            }
+          }
+        }
+      ])
+      .then(function(answer) {
+        let productId = parseInt(answer.id);
+        inquirer
+          .prompt([
+            {
+              name: "quantity",
+              type: "input",
+              message: "Enter the quantity to purchase",
+              validate: function(value) {
+                if (
+                  quantities[productIds.indexOf(productId)] > parseInt(value)
+                ) {
+                  return true;
+                } else {
+                  return "Enter a value that is greater than 0 and less then the available quantity.";
+                }
+              }
+            }
+          ])
+          .then(function(answer) {
+            let quantity = parseInt(answer.quantity);
 
-  inquirer
-    .prompt([
-      {
-        name: "id",
-        type: "input",
-        message: "Enter the Product ID you would like to purchase."
-      },
-      {
-        name: "quantity",
-        type: "input",
-        message: "Enter the quantity to purchase"
-      }
-    ])
-    .then(function(answer) {
-      console.log(`\n`);
-      console.log(`id: ${answer.id} quantity: ${answer.quantity}`);
-      // validation for the id needs to check that it is a valid product id
-      // validation for the quantity needs to check that it is a value greater then 0, is not a decimal, and the stock quantity is >= the desired purchase quantity
+            connection.query(
+              `SELECT * FROM products WHERE item_id=${productId}`,
+              function(err, res) {
+                if (err) throw err;
+                let myItem = res[0];
+                // tell the user how much of whatever they bought
+                console.log(
+                  `You purchased ${quantity} of ${
+                    myItem.product_name
+                  } for $${quantity * myItem.price}`
+                );
 
-      // if successful - update the quantity for the product id
-      // then displayProducts
-
-      // if failed validation, tell the user why, then display the options or the products again
-      userOptions();
-    });
+                // update the quantity for the product id
+                connection.query(
+                  `UPDATE products SET stock_quantity = ${myItem.stock_quantity -
+                    quantity} WHERE item_id = ${productId}`,
+                  function(err, res) {
+                    if (err) throw err;
+                    console.log(`Thank you for shopping at bamazon.`);
+                    displayProducts();
+                  }
+                );
+              }
+            );
+          });
+      });
+  });
 };
 
 // Quit function - close the connection
