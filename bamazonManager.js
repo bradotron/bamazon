@@ -214,8 +214,77 @@ let addInventory = function() {
 
 let addProduct = function() {
   // this function will prompt the user for all of the information required to add a new item to the database
-  console.log(`addProduct()`);
-  userOptions();
+
+  // ask the user for four things:
+  // product_name
+  // department_name
+  // price
+  // stock_quantity
+  inquirer
+    .prompt([
+      {
+        name: "name",
+        type: "input",
+        message: "Enter a Product Name",
+        validate: function(value) {
+          // make sure the string is not empty
+          if (value.length <= 0) {
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        name: "department",
+        type: "input",
+        message: "Enter the Department",
+        validate: function(value) {
+          // make sure the string is not empty
+          if (value.length <= 0) {
+            return false;
+          } else {
+            return true;
+          }
+        }
+      },
+      {
+        name: "price",
+        type: "input",
+        message: "Enter the Price",
+        validate: function(value) {
+          if (parseFloat(value) > 0) {
+            return true;
+          } else {
+            return "Please enter a number.";
+          }
+        }
+      },
+      {
+        name: "stock",
+        type: "input",
+        message: "Enter the initial Inventory",
+        validate: function(value) {
+          if (parseInt(value) > 0) {
+            return true;
+          } else {
+            return "Please enter a number.";
+          }
+        }
+      }
+    ])
+    .then(function(answer) {
+      // do an update querry to add a value
+      let sql = `INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES ("${answer.name}", "${answer.department}", ${parseFloat(answer.price)}, ${parseInt(
+        answer.stock
+      )})`;
+
+      connection.query(sql, function(err, res) {
+        if (err) throw err;
+        console.log("Product has been added successfully.\n");
+        userOptions();
+      });
+    });
 };
 
 // Quit function - close the connection
